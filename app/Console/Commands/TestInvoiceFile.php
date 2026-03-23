@@ -61,7 +61,8 @@ class TestInvoiceFile extends Command
                 foreach ($fields as $key => $value) {
                     $conf = $data['confidences'][$key] ?? null;
                     $confStr = $conf ? " <fg=gray>(conf: {$conf})</>" : '';
-                    $valueStr = is_numeric($value) ? number_format((float)$value, 2) : $value;
+                    // $valueStr = is_numeric($value) ? number_format((float)$value, 2) : $value; uncomment for numeric result
+                    $valueStr = is_numeric($value) ? $value : $value;
                     $this->line("  {$key}: <fg=green>{$valueStr}</>{$confStr}");
                 }
                 $this->newLine();
@@ -77,7 +78,8 @@ class TestInvoiceFile extends Command
                 $this->table(
                     array_keys($lineItems[0]),
                     array_map(fn($item) => array_map(
-                        fn($v) => is_numeric($v) ? number_format((float)$v, 2) : (string)$v,
+                        // fn($v) => is_numeric($v) ? number_format((float)$v, 2) : (string)$v, uncomment for formatted number
+                        fn($v) => is_numeric($v) ? $v : (string)$v,
                         array_values($item)
                     ), $lineItems)
                 );
@@ -90,13 +92,12 @@ class TestInvoiceFile extends Command
                     'meta'       => $data['meta'],
                     'fields'     => $data['fields'],
                     'line_items' => $data['line_items'],
-                    'confidences'=> $data['confidences'],
+                    'confidences' => $data['confidences'],
                 ];
                 $this->line(json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             }
 
             return Command::SUCCESS;
-
         } catch (\Throwable $e) {
             $this->error('✗ Error: ' . $e->getMessage());
             $this->newLine();
