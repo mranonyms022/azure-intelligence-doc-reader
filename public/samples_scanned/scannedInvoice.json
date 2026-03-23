@@ -1,0 +1,98 @@
+{
+    "meta": {
+        "document_language": "ar",
+        "page_count": 1,
+        "model_id": "invoice",
+        "api_version": "2024-11-30"
+    },
+    "fields": {
+        "invoice_date": "2026-03-17",
+        "vendor_name": "Golden Chicken Farms Co.\nشركة مزارع الفرّوج الذهبي",
+        "customer_name": "TAMIMI MARKETS COMPANY, LLC 110",
+        "customer_address": "P.O BOX 6941 AL-KHOBAR: RAKKAH",
+        "subtotal": 2184.65,
+        "vat_amount": 327.7,
+        "total_amount": 2512.35
+    },
+    "line_items": [
+        {
+            "index": 1,
+            "description": "فيليه دجاج مبرد 900غ\nFR-A CHICK\\FILE900G",
+            "product_code": "180418",
+            "quantity": 20,
+            "unit_price": 319,
+            "tax": 95.7,
+            "amount": 733.7
+        },
+        {
+            "index": 2,
+            "description": "FR-A CHICK\\WNG\nأجنحة دجاج مبرد 500 غ\n500G",
+            "product_code": "181606",
+            "quantity": 5,
+            "unit_price": 90,
+            "tax": 3.38,
+            "amount": 25.88
+        },
+        {
+            "index": 3,
+            "description": "FR-A CHICK\\FILLE450G\nفيليه دجاج مبرد 450 غ",
+            "product_code": "181613",
+            "quantity": 60,
+            "unit_price": 330,
+            "tax": 148.5,
+            "amount": 1138.5
+        },
+        {
+            "index": 4,
+            "description": "دجاج طازج فاخر 900 غم 9006\nPREM FR CH TRAY",
+            "product_code": "182048",
+            "quantity": 5,
+            "unit_price": 157.5,
+            "tax": 11.81,
+            "amount": 90.56
+        },
+        {
+            "index": 5,
+            "description": "دجاج طازج فاخر 1000 غم PREM FR CH TRAY 1000G",
+            "product_code": "182055",
+            "quantity": 6,
+            "unit_price": 165,
+            "tax": 14.85,
+            "amount": 113.85
+        },
+        {
+            "index": 6,
+            "description": "دجاج طازج فاخر 1100 غم PREM FR CH TRAY1100G",
+            "product_code": "182062",
+            "quantity": 6,
+            "unit_price": 173,
+            "tax": 15.57,
+            "amount": 119.37
+        },
+        {
+            "index": 7,
+            "description": "دجاج طازج فاخر 1200 غم PREM FR CH TRAY12006",
+            "product_code": "182079",
+            "quantity": 6,
+            "unit_price": 181,
+            "tax": 16.29,
+            "amount": 124.89
+        },
+        {
+            "index": 8,
+            "description": "قطع دجاج طازجة 800 غم FRESH CHICKEN MIXED P",
+            "product_code": "183724",
+            "quantity": 15,
+            "unit_price": 76.8,
+            "tax": 21.6,
+            "amount": 165.6
+        }
+    ],
+    "confidences": {
+        "invoice_date": 0.84,
+        "vendor_name": 0.64,
+        "customer_name": 0.82,
+        "total_amount": 0.94,
+        "vat_amount": 0.87
+    }
+}
