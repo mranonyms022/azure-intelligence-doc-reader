@@ -20,7 +20,7 @@ class AzureDocumentIntelligenceService
     private string $version;
     private int    $pollMaxAttempts;
     private int    $pollSleepSeconds;
-
+    private array $lastRawResult = [];
     public function __construct()
     {
         $this->endpoint         = rtrim(config('invoice.azure.endpoint', ''), '/');
@@ -187,6 +187,7 @@ class AzureDocumentIntelligenceService
      */
     private function extractInvoiceFields(array $analyzeResult): array
     {
+        $this->lastRawResult = $analyzeResult;
         $documents = $analyzeResult['documents'] ?? [];
         $doc       = $documents[0] ?? [];
         $fields    = $doc['fields'] ?? [];
@@ -201,7 +202,33 @@ class AzureDocumentIntelligenceService
             ],
 
             'fields' => array_filter([
-                'invoice_number'  => $this->getString($fields, 'InvoiceId',       $minConf),
+                // ── Invoice Number ──────────────────────────────────────
+                // Tax Invoice, Invoice, Invoice No, Reference, Voucher etc.
+                'invoice_number' => $this->getString($fields, 'InvoiceId',           $minConf)
+                    ?? $this->getString($fields, 'InvoiceNumber',       $minConf)
+                    ?? $this->getString($fields, 'InvoiceNo',           $minConf)
+                    ?? $this->getString($fields, 'Invoice No',          $minConf)
+                    ?? $this->getString($fields, 'Invoice No.',         $minConf)
+                    ?? $this->getString($fields, 'TaxInvoiceNumber',    $minConf)
+                    ?? $this->getString($fields, 'TaxInvoice',          $minConf)
+                    ?? $this->getString($fields, 'Tax Invoice No',      $minConf)
+                    ?? $this->getString($fields, 'Tax Invoice Number',  $minConf)
+                    ?? $this->getString($fields, 'ReferenceNumber',     $minConf)
+                    ?? $this->getString($fields, 'Reference',           $minConf)
+                    ?? $this->getString($fields, 'Ref',                 $minConf)
+                    ?? $this->getString($fields, 'Ref No',              $minConf)
+                    ?? $this->getString($fields, 'Ref.',                $minConf)
+                    ?? $this->getString($fields, 'VoucherNumber',       $minConf)
+                    ?? $this->getString($fields, 'Voucher No',          $minConf)
+                    ?? $this->getString($fields, 'DocumentNumber',      $minConf)
+                    ?? $this->getString($fields, 'Doc No',              $minConf)
+                    // Arabic variants
+                    ?? $this->getString($fields, 'رقم الفاتورة',        $minConf)
+                    ?? $this->getString($fields, 'رقم فاتورة الضريبة',  $minConf)
+                    ?? $this->getString($fields, 'رقم المرجع',          $minConf)
+                    ?? $this->getString($fields, 'رقم',                 $minConf)
+                    ?? $this->extractFromLines($fields, '/TAX\s+IN[^#]*#\s*([\d]+)/i')
+                    ?? $this->getString($fields, 'Reference',           $minConf),
                 'invoice_date'    => $this->getDate($fields,   'InvoiceDate',      $minConf),
                 'due_date'        => $this->getDate($fields,   'DueDate',          $minConf),
                 'po_number'       => $this->getString($fields, 'PurchaseOrder',    $minConf),
@@ -418,5 +445,24 @@ class AzureDocumentIntelligenceService
         throw new \RuntimeException(
             "AzureDI {$step} failed [{$status}]: {$message}"
         );
+    }
+
+    /**
+     * Scan raw LINE blocks with regex — fallback for unusual invoice formats.
+     * Use when Azure does not map a value to a known field key.
+     */
+    private function extractFromLines(array $analyzeResult, string $pattern): ?string
+    {
+        // analyzeResult yahan pass nahi ho raha directly —
+        // isliye $this->lastRawResult store karenge
+        foreach ($this->lastRawResult['pages'] ?? [] as $page) {
+            foreach ($page['lines'] ?? [] as $line) {
+                $text = $line['content'] ?? '';
+                if (preg_match($pattern, $text, $matches)) {
+                    return trim($matches[1]);
+                }
+            }
+        }
+        return null;
     }
 }
