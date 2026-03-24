@@ -9,14 +9,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Invoice extends Model
 {
     protected $fillable = [
-        'store_id', 'store_code', 'file_name', 'file_path',
-        'document_language', 'page_count',
-        'invoice_number', 'invoice_date', 'due_date', 'po_number',
-        'vendor_name', 'vendor_address', 'vendor_tax_id',
-        'customer_name', 'customer_address',
-        'subtotal', 'vat_amount', 'total_amount', 'amount_due', 'currency',
-        'line_items', 'raw_fields', 'confidences', 'raw_azure_json',
+        'store_id',
+        'store_code',
+        'file_name',
+        'file_path',
+        'document_language',
+        'page_count',
+        'invoice_number',
+        'invoice_date',
+        'due_date',
+        'po_number',
+        'vendor_name',
+        'vendor_address',
+        'vendor_tax_id',
+        'customer_name',
+        'customer_address',
+        'subtotal',
+        'vat_amount',
+        'total_amount',
+        'amount_due',
+        'currency',
+        'line_items',
+        'raw_fields',
+        'confidences',
+        'raw_azure_json',
         'processed_at',
+        'needs_review',
+        'min_confidence_score',
     ];
 
     protected $casts = [
@@ -31,6 +50,8 @@ class Invoice extends Model
         'invoice_date'   => 'date',
         'due_date'       => 'date',
         'processed_at'   => 'datetime',
+        'needs_review'         => 'boolean',
+        'min_confidence_score' => 'decimal:2',
     ];
 
     public function store(): BelongsTo

@@ -79,9 +79,11 @@ class InvoiceScannerService
 
         try {
             // Skip already processed
-            if (!$dryRun && Invoice::where('store_code', $storeCode)
-                                   ->where('file_name', $fileName)
-                                   ->exists()) {
+            if (
+                !$dryRun && Invoice::where('store_code', $storeCode)
+                ->where('file_name', $fileName)
+                ->exists()
+            ) {
                 $logger("      [SKIP] Already in database");
                 return $this->row($storeCode, $fileName, 'skipped', '-', '-', 'Already processed');
             }
@@ -104,7 +106,6 @@ class InvoiceScannerService
 
             $summary = "Fields: {$fieldCount} | Items: {$itemCount}" . ($dryRun ? ' (dry run)' : ' | Saved');
             return $this->row($storeCode, $fileName, 'success', $lang, $totalAmount . ' ' . $currency, $summary);
-
         } catch (\Throwable $e) {
             Log::error("InvoiceScanner: Failed [{$filePath}]", [
                 'error' => $e->getMessage(),
@@ -164,6 +165,8 @@ class InvoiceScannerService
                 'raw_azure_json'    => $data['raw'],     // null unless INVOICE_STORE_RAW=true
 
                 'processed_at'      => now(),
+                'needs_review'         => $this->needsReview($data['confidences'] ?? []),
+                'min_confidence_score' => $this->minConfidence($data['confidences'] ?? []),
             ]
         );
     }
@@ -177,7 +180,7 @@ class InvoiceScannerService
         if (!is_dir($basePath)) {
             throw new \RuntimeException(
                 "Base path not found: {$basePath}\n"
-              . "Set INVOICE_BASE_PATH in your .env file."
+                    . "Set INVOICE_BASE_PATH in your .env file."
             );
         }
 
@@ -205,15 +208,44 @@ class InvoiceScannerService
     {
         $extensions = config('invoice.extensions', ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif']);
         $pattern    = rtrim($folderPath, '/\\') . DIRECTORY_SEPARATOR
-                    . '*.{' . implode(',', $extensions) . '}';
+            . '*.{' . implode(',', $extensions) . '}';
 
         return collect(glob($pattern, GLOB_BRACE) ?: []);
     }
 
     private function row(
-        string $store, string $file, string $status,
-        string $lang,  string $total, string $message
+        string $store,
+        string $file,
+        string $status,
+        string $lang,
+        string $total,
+        string $message
     ): array {
         return compact('store', 'file', 'status', 'lang', 'total', 'message');
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // Quality control helpers
+    // ──────────────────────────────────────────────────────────
+
+    /**
+     * Flag invoice for manual review if any field confidence is below 0.70.
+     */
+    private function needsReview(array $confidences): bool
+    {
+        if (empty($confidences)) return false;
+
+        return min(array_values($confidences)) < 0.70;
+    }
+
+    /**
+     * Return the lowest confidence score across all extracted fields.
+     * Saved to DB for easy sorting of review queue.
+     */
+    private function minConfidence(array $confidences): ?float
+    {
+        if (empty($confidences)) return null;
+
+        return round(min(array_values($confidences)), 2);
     }
 }
