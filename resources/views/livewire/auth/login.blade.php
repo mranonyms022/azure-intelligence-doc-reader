@@ -3,10 +3,10 @@
 <div>
     <h6 class="fw-semibold mb-4 text-center text-muted">Sign in to your account</h6>
 
-    @if ($error)
-        <div class="alert alert-danger py-2 small">
-            <i class="bi bi-exclamation-circle me-1"></i>{{ $error }}
-        </div>
+    @if($error)
+    <div class="alert alert-danger py-2 small">
+        <i class="bi bi-exclamation-circle me-1"></i>{{ $error }}
+    </div>
     @endif
 
     <form wire:submit="login">
@@ -16,11 +16,14 @@
             <label class="form-label fw-semibold small">Email Address</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope text-muted"></i></span>
-                <input type="email" wire:model="email" class="form-control @error('email') is-invalid @enderror"
-                    placeholder="admin@invoicedms.com" autofocus>
+                <input type="email"
+                       wire:model="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       placeholder="admin@invoicedms.com"
+                       autofocus>
             </div>
             @error('email')
-                <div class="invalid-feedback d-block small">{{ $message }}</div>
+            <div class="invalid-feedback d-block small">{{ $message }}</div>
             @enderror
         </div>
 
@@ -29,11 +32,13 @@
             <label class="form-label fw-semibold small">Password</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock text-muted"></i></span>
-                <input type="password" wire:model="password"
-                    class="form-control @error('password') is-invalid @enderror" placeholder="••••••••">
+                <input type="password"
+                       wire:model="password"
+                       class="form-control @error('password') is-invalid @enderror"
+                       placeholder="••••••••">
             </div>
             @error('password')
-                <div class="invalid-feedback d-block small">{{ $message }}</div>
+            <div class="invalid-feedback d-block small">{{ $message }}</div>
             @enderror
         </div>
 
@@ -59,10 +64,10 @@
 
     </form>
 
-    {{-- Demo credentials hint
+    {{-- Demo credentials hint --}}
     <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
         <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-1"></i>Demo credentials</div>
         <div>Admin: <code>admin@invoicedms.com</code> / <code>admin123</code></div>
         <div>User: <code>user@invoicedms.com</code> / <code>user123</code></div>
-    </div> --}}
+    </div>
 </div>

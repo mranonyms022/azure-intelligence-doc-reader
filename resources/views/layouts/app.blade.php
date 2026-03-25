@@ -220,8 +220,13 @@
 
         @if(auth()->user()?->isAdmin())
         <div class="sidebar-section">Admin</div>
+        <a href="{{ route('admin.stores') }}"
+           class="sidebar-link {{ request()->routeIs('admin.stores') ? 'active' : '' }}"
+           onclick="closeSidebarMobile()">
+            <i class="bi bi-shop"></i>Stores
+        </a>
         <a href="{{ route('admin.users') }}"
-           class="sidebar-link {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+           class="sidebar-link {{ request()->routeIs('admin.users') ? 'active' : '' }}"
            onclick="closeSidebarMobile()">
             <i class="bi bi-people"></i>Users
         </a>

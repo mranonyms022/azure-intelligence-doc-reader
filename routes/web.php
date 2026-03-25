@@ -7,26 +7,28 @@ use App\Livewire\Dashboard;
 use App\Livewire\InvoiceList;
 use App\Livewire\InvoiceDetail;
 use App\Livewire\Admin\UserManager;
+use App\Livewire\Admin\StoreManager;
 
-// ── Guest routes ──────────────────────────────────────────
+// ── Guest ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/',      Login::class)->name('login');
     Route::get('/login', Login::class);
 });
 
-// ── Authenticated routes ──────────────────────────────────
+// ── Authenticated ─────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
-    Route::get('/dashboard',           Dashboard::class)->name('dashboard');
-    Route::get('/invoices',            InvoiceList::class)->name('invoices.index');
-    Route::get('/invoices/{id}',       InvoiceDetail::class)->name('invoices.show');
+    Route::get('/dashboard',       Dashboard::class)->name('dashboard');
+    Route::get('/invoices',        InvoiceList::class)->name('invoices.index');
+    Route::get('/invoices/{id}',   InvoiceDetail::class)->name('invoices.show');
 
-    // Admin only
+    // ── Admin only ────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
-        Route::get('/admin/users', UserManager::class)->name('admin.users');
+        Route::get('/admin/users',  UserManager::class)->name('admin.users');
+        Route::get('/admin/stores', StoreManager::class)->name('admin.stores');
     });
 
-    // Logout
+    // ── Logout ────────────────────────────────────────────
     Route::post('/logout', function () {
         auth()->logout();
         session()->invalidate();

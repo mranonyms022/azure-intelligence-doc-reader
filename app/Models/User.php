@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -12,20 +13,41 @@ class User extends Authenticatable
 
     protected $fillable = ['name', 'email', 'password', 'role', 'is_active'];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden   = ['password', 'remember_token'];
 
     protected $casts = [
-        'password'   => 'hashed',
-        'is_active'  => 'boolean',
+        'password'  => 'hashed',
+        'is_active' => 'boolean',
     ];
 
-    public function isAdmin(): bool
+    // ── Role helpers ──────────────────────────────────────────
+    public function isAdmin(): bool { return $this->role === 'admin'; }
+    public function isUser():  bool { return $this->role === 'user';  }
+
+    // ── Store relationship (many-to-many) ─────────────────────
+    public function stores(): BelongsToMany
     {
-        return $this->role === 'admin';
+        return $this->belongsToMany(Store::class, 'user_store')
+                    ->withTimestamps();
     }
 
-    public function isUser(): bool
+    /**
+     * Returns store codes this user can access.
+     * Admin → empty array (means no restriction — see all)
+     * User  → array of assigned store codes
+     */
+    public function accessibleStoreCodes(): array
     {
-        return $this->role === 'user';
+        if ($this->isAdmin()) return [];
+        return $this->stores()->pluck('code')->toArray();
+    }
+
+    /**
+     * Check access to a specific store code.
+     */
+    public function hasStoreAccess(string $storeCode): bool
+    {
+        if ($this->isAdmin()) return true;
+        return in_array($storeCode, $this->accessibleStoreCodes());
     }
 }

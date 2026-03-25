@@ -9,21 +9,38 @@ use App\Models\Store;
 
 class Dashboard extends Component
 {
+    // ── Accessible store codes for current user ───────────────
+    private function accessCodes(): array
+    {
+        return auth()->user()->accessibleStoreCodes();
+    }
+
+    private function baseQuery()
+    {
+        $codes = $this->accessCodes();
+        return Invoice::when(!empty($codes), fn($q) =>
+            $q->whereIn('store_code', $codes)
+        );
+    }
+
     public function getStatsProperty(): array
     {
         return [
-            'total_invoices'   => Invoice::count(),
-            'needs_review'     => Invoice::where('needs_review', true)->count(),
-            'arabic_invoices'  => Invoice::where('document_language', 'ar')->count(),
-            'english_invoices' => Invoice::where('document_language', 'en')->count(),
-            'today_processed'  => Invoice::whereDate('processed_at', today())->count(),
-            'total_stores'     => Store::count(),
+            'total_invoices'   => $this->baseQuery()->count(),
+            'needs_review'     => $this->baseQuery()->where('needs_review', true)->count(),
+            'arabic_invoices'  => $this->baseQuery()->where('document_language', 'ar')->count(),
+            'english_invoices' => $this->baseQuery()->where('document_language', 'en')->count(),
+            'today_processed'  => $this->baseQuery()->whereDate('processed_at', today())->count(),
+            'total_stores'     => auth()->user()->isAdmin()
+                                    ? Store::count()
+                                    : count($this->accessCodes()),
         ];
     }
 
     public function getRecentInvoicesProperty()
     {
-        return Invoice::with('store')
+        return $this->baseQuery()
+            ->with('store')
             ->orderByDesc('processed_at')
             ->limit(8)
             ->get();
@@ -31,7 +48,8 @@ class Dashboard extends Component
 
     public function getByStoreProperty()
     {
-        return Invoice::selectRaw('store_code, count(*) as total, sum(total_amount) as revenue')
+        return $this->baseQuery()
+            ->selectRaw('store_code, count(*) as total, sum(total_amount) as revenue')
             ->groupBy('store_code')
             ->orderByDesc('total')
             ->get();
@@ -39,7 +57,8 @@ class Dashboard extends Component
 
     public function getByCurrencyProperty()
     {
-        return Invoice::selectRaw('currency, count(*) as total, sum(total_amount) as amount')
+        return $this->baseQuery()
+            ->selectRaw('currency, count(*) as total, sum(total_amount) as amount')
             ->whereNotNull('currency')
             ->groupBy('currency')
             ->orderByDesc('total')
